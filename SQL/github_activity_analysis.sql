@@ -1,12 +1,18 @@
 -- 1. Total Repositories
 SELECT
-	COUNT(DISTINCT repo_name) AS total_repositories
+	COUNT(DISTINCT repo_id) AS total_repositories
 FROM fullday
 
 -- 2. Unique Repository Owners
 SELECT
-	COUNT(DISTINCT actor_id) AS unique_owners
+    COUNT(
+        DISTINCT LEFT(
+            repo_name,
+            CHARINDEX('/', repo_name) - 1
+        )
+    ) AS unique_repository_owners
 FROM fullday
+WHERE repo_name LIKE '%/%';
 
 -- 3. Most common event types
 SELECT
@@ -23,7 +29,7 @@ FROM fullday
 
 -- 5. Unique user generating activity
 SELECT
-	COUNT(DISTINCT actor_id) AS total_activity
+	COUNT(DISTINCT actor_id) AS unique_users
 FROM fullday
 WHERE event_type IS NOT NULL
 
@@ -49,7 +55,7 @@ FROM fullday
 GROUP BY actor_login
 ORDER BY total_events DESC
 
--- 9. Which hour of the day with most activity
+-- 9. Total Activity by Hour
 SELECT
 	DATEPART(HOUR, created_at) AS hourOfDay,
 
@@ -64,7 +70,7 @@ GROUP BY DATEPART(HOUR, created_at)
 ORDER BY hourOfDay DESC
 
 -- 10. Repository with the most unique customer contributors
-SELECT
+SELECT TOP 10
 	repo_name,
 	COUNT(DISTINCT actor_id) AS unique_contributors
 FROM fullday
@@ -81,30 +87,49 @@ WHERE event_type IN (
 GROUP BY repo_name
 ORDER BY unique_contributors DESC
 
--- 11. User with most Unique contributions
-SELECT
-	
-	actor_login,
-	COUNT(DISTINCT event_type) AS unique_contributions,
-
-	RANK() OVER(
-		PARTITION BY repo_name
-		ORDER BY event_type DESC
-	) as ranked
-
-FROM fullday
-WHERE event_type IN (
-	  'PushEvent',
-	  'CommitCommentEvent',
-    'IssueCommentEvent',
-    'IssuesEvent',
-    'PullRequestEvent',
-    'PullRequestReviewCommentEvent',
-    'PullRequestReviewEvent',
-    'ReleaseEvent'
+-- 11. Users with the most contribution events overall
+WITH ContributorActivity AS
+(
+    SELECT
+        repo_name,
+        actor_login,
+        COUNT(*) AS total_contributions
+    FROM fullday
+    WHERE event_type IN
+    (
+        'PushEvent',
+        'CommitCommentEvent',
+        'IssueCommentEvent',
+        'IssuesEvent',
+        'PullRequestEvent',
+        'PullRequestReviewCommentEvent',
+        'PullRequestReviewEvent',
+        'ReleaseEvent'
+    )
+    GROUP BY
+        repo_name,
+        actor_login
+),
+RankedContributors AS
+(
+    SELECT
+        repo_name,
+        actor_login,
+        total_contributions,
+        RANK() OVER
+        (
+            PARTITION BY repo_name
+            ORDER BY total_contributions DESC
+        ) AS contributor_rank
+    FROM ContributorActivity
 )
-GROUP BY actor_login, repo_name, event_type
-ORDER BY unique_contributions DESC
+SELECT
+    repo_name,
+    actor_login,
+    total_contributions
+FROM RankedContributors
+WHERE contributor_rank = 1
+ORDER BY total_contributions DESC;
 
 -- 12. Repository ranks by unique contributors and total event activity
 WITH repo_metrics AS
