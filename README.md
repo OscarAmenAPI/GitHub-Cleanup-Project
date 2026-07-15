@@ -70,19 +70,19 @@ The imported data was validated by checking:
 
 ### Most Common Event Types
 
-![Most Common Event Types]()
+![Most Common Event Types](IMAGES/top_event_types.PNG)
 
 This query identifies the GitHub event types that occurred most frequently during the analyzed period.
 
 ### Most Active Repositories
 
-![Most Active Repositories]()
+![Most Active Repositories](IMAGES/top_repositories.PNG)
 
 This analysis ranks repositories according to total recorded activity.
 
 ### Activity by Hour
 
-![Activity by Hour]()
+![Activity by Hour](IMAGES/activity_by_hour.PNG)
 
 This query shows how public GitHub activity changed across the hours represented in the dataset.
 
