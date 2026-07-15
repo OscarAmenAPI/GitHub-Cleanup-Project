@@ -112,3 +112,8 @@ github-activity-analysis/
 ├── sql/
 ├── data/
 |── images/
+
+````
+## Conclusion
+
+This project demonstrates how raw event data can be transformed into structured analysis using SQL Server. The analysis focuses on activity volume, ranking, time-based patterns, and repository concentration while clearly documenting the limitations of the available data.
