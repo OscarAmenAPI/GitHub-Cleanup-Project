@@ -111,5 +111,4 @@ github-activity-analysis/
 ├── README.md
 ├── sql/
 ├── data/
-├── images/
-└── notes/
+|── images/
